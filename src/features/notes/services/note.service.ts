@@ -14,7 +14,7 @@ export async function createNote(
 
 const accessKey =
   data.accessType === "PASSWORD"
-    ? data.accessKey
+    ? Math.random().toString(36).slice(-8)
     : null;
   const note = await prisma.note.create({
     data: {

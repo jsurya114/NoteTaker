@@ -12,7 +12,6 @@ export default function NewNotePage() {
   const [shareType, setShareType] = useState("TIME_BASED");
   const [accessType, setAccessType] = useState("PUBLIC");
   const [expiryAt, setExpiryAt] = useState("");
-  const [accessKey, setAccessKey] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -34,11 +33,7 @@ export default function NewNotePage() {
       return;
     }
 
-    if (accessType === "PASSWORD" && !accessKey) {
-      setError("Please provide a password.");
-      setLoading(false);
-      return;
-    }
+
 
     const token = localStorage.getItem("token");
 
@@ -54,7 +49,7 @@ export default function NewNotePage() {
           content,
           shareType,
           accessType,
-          accessKey: accessType === "PASSWORD" ? accessKey : undefined,
+          accessKey: undefined,
           expiryAt: new Date(expiryAt).toISOString(),
         }),
       });
@@ -143,18 +138,7 @@ export default function NewNotePage() {
               </div>
             </div>
 
-            {accessType === "PASSWORD" && (
-              <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-                <label className="block text-sm font-bold uppercase mb-2">Custom Password</label>
-                <input
-                  type="text"
-                  required
-                  value={accessKey}
-                  onChange={(e) => setAccessKey(e.target.value)}
-                  className="w-full border-2 border-black p-3 focus:outline-none focus:ring-0 transition-all focus:-translate-y-1 focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
-                />
-              </div>
-            )}
+
 
             <div>
               <label className="block text-sm font-bold uppercase mb-2">Expiry Date & Time</label>

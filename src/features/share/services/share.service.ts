@@ -126,38 +126,18 @@ export async function unlockNote(
   return safeNote;
 }
 
-async function markOneTimeLinkAsUsed(
-  noteId: string
-) {
-  await prisma.$transaction(
-    async (tx) => {
-      const note =
-        await tx.note.findUnique({
-          where: {
-            id: noteId,
-          },
-        });
+async function markOneTimeLinkAsUsed(noteId: string) {
+  const result = await prisma.note.updateMany({
+    where: {
+      id: noteId,
+      isUsed: false,
+    },
+    data: {
+      isUsed: true,
+    },
+  });
 
-      if (!note) {
-        throw new Error(
-          "Note not found"
-        );
-      }
-
-      if (note.isUsed) {
-        throw new Error(
-          "One-time link already used"
-        );
-      }
-
-      await tx.note.update({
-        where: {
-          id: noteId,
-        },
-        data: {
-          isUsed: true,
-        },
-      });
-    }
-  );
+  if (result.count === 0) {
+    throw new Error("One-time link already used");
+  }
 }
