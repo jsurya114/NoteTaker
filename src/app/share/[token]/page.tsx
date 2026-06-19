@@ -65,59 +65,90 @@ export default function SharePage() {
   }
 
   if (loading) {
-    return <div className="p-5">Loading...</div>;
+    return (
+      <div className="min-h-screen bg-white flex justify-center items-center font-sans text-black">
+        <div className="text-xl font-black uppercase tracking-widest animate-pulse border-2 border-black p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+          Decrypting...
+        </div>
+      </div>
+    );
   }
 
   if (error && !note) {
     return (
-      <div className="p-5 max-w-md mx-auto mt-10 border border-red-500">
-        <h2 className="font-bold text-red-500 mb-2">Access Denied</h2>
-        <p>{error}</p>
+      <div className="min-h-screen bg-white flex flex-col justify-center items-center p-6 font-sans text-black">
+        <div className="max-w-md w-full border-4 border-black bg-red-100 p-8 shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] text-center">
+          <h2 className="text-3xl font-black uppercase tracking-tight mb-4 text-red-600">Access Denied</h2>
+          <p className="font-bold text-lg">{error}</p>
+        </div>
       </div>
     );
   }
 
   if (note?.accessType === "PASSWORD" && !note.content) {
     return (
-      <div className="max-w-md mx-auto mt-10 p-5 border">
-        <h2 className="text-xl font-bold mb-4">Protected Note</h2>
-        
-        <form onSubmit={unlockNote} className="space-y-4">
-          {error && <div className="text-red-500">{error}</div>}
+      <div className="min-h-screen bg-white flex justify-center items-center p-6 font-sans text-black">
+        <div className="max-w-md w-full border-2 border-black p-8 bg-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+          <div className="mb-8 border-b-4 border-black pb-4 text-center">
+            <h1 className="text-3xl font-black uppercase tracking-tight">Protected Note</h1>
+            <p className="text-sm font-bold uppercase mt-2 text-gray-600">Password Required</p>
+          </div>
           
-          <input
-            type="password"
-            placeholder="Enter password"
-            value={accessKey}
-            onChange={(e) => setAccessKey(e.target.value)}
-            className="border p-2 w-full"
-            required
-          />
+          <form onSubmit={unlockNote} className="space-y-6">
+            {error && (
+              <div className="p-3 border-2 border-black bg-red-50 text-red-600 font-semibold text-sm text-center">
+                {error}
+              </div>
+            )}
+            
+            <div>
+              <label className="block text-sm font-bold uppercase mb-2">Enter Password</label>
+              <input
+                type="password"
+                value={accessKey}
+                onChange={(e) => setAccessKey(e.target.value)}
+                className="w-full border-2 border-black p-4 text-center tracking-widest text-lg focus:outline-none focus:ring-0 transition-all focus:-translate-y-1 focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+                required
+              />
+            </div>
 
-          <button
-            type="submit"
-            disabled={unlocking || !accessKey}
-            className="border px-4 py-2 w-full"
-          >
-            {unlocking ? "Unlocking..." : "Unlock"}
-          </button>
-        </form>
+            <button
+              type="submit"
+              disabled={unlocking || !accessKey}
+              className="w-full bg-black text-white font-bold uppercase tracking-widest p-4 border-2 border-transparent hover:bg-white hover:text-black hover:border-black transition-colors disabled:opacity-50"
+            >
+              {unlocking ? "Unlocking..." : "Unlock Note"}
+            </button>
+          </form>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-2xl mx-auto mt-10 p-5 border">
-      <h1 className="text-2xl font-bold mb-2">{note.title}</h1>
-      
-      {note.shareType === "ONE_TIME" && (
-        <div className="mb-4 text-orange-600 border border-orange-300 p-2">
-          Warning: This is a one-time link. The note has self-destructed and cannot be viewed again.
-        </div>
-      )}
+    <div className="min-h-screen bg-white p-6 font-sans text-black">
+      <div className="max-w-3xl mx-auto border-2 border-black p-8 bg-white shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] mt-10">
+        <header className="mb-8 border-b-4 border-black pb-4">
+          <h1 className="text-4xl font-black uppercase tracking-tight break-words">{note.title}</h1>
+        </header>
+        
+        {note.shareType === "ONE_TIME" && (
+          <div className="mb-8 border-4 border-black bg-orange-100 p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+            <h3 className="font-black uppercase text-orange-600 flex items-center gap-2">
+              <span className="text-xl">⚠️</span> Warning: One-Time Link
+            </h3>
+            <p className="font-bold mt-1 text-sm">
+              This note has self-destructed and cannot be viewed again. Save its contents now.
+            </p>
+          </div>
+        )}
 
-      <div className="border p-4 whitespace-pre-wrap mt-4">
-        {note.content}
+        <div>
+          <h2 className="text-sm font-black uppercase mb-2 text-gray-500">Secure Message</h2>
+          <div className="border-2 border-black p-6 bg-gray-50 whitespace-pre-wrap font-medium text-lg leading-relaxed">
+            {note.content}
+          </div>
+        </div>
       </div>
     </div>
   );
