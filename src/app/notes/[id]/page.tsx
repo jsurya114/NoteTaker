@@ -4,10 +4,6 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { format } from "date-fns";
-import { 
-  ArrowLeft, FileText, Clock, Eye, Copy, 
-  Ban, Shield, Link as LinkIcon, CheckCircle2 
-} from "lucide-react";
 
 export default function NoteDetailsPage() {
   const params = useParams();
@@ -62,7 +58,7 @@ export default function NoteDetailsPage() {
   };
 
   const handleRevoke = async () => {
-    if (!confirm("Are you sure you want to revoke this note? It will immediately become inaccessible.")) {
+    if (!confirm("Are you sure you want to revoke this note?")) {
       return;
     }
 
@@ -91,139 +87,68 @@ export default function NoteDetailsPage() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
-      </div>
-    );
+    return <div className="p-5">Loading...</div>;
   }
 
   if (error || !note) {
     return (
-      <div className="min-h-screen bg-gray-50 p-8 flex flex-col items-center justify-center">
-        <div className="bg-red-50 text-red-700 p-4 rounded-lg flex items-center mb-4 border border-red-200 shadow-sm max-w-md w-full">
-          <Ban className="mr-2" /> {error || "Note not found."}
-        </div>
-        <Link href="/notes" className="text-indigo-600 hover:text-indigo-800 font-medium flex items-center">
-          <ArrowLeft size={16} className="mr-1" /> Back to Dashboard
-        </Link>
+      <div className="p-5">
+        <p className="text-red-500 mb-4">{error || "Note not found."}</p>
+        <Link href="/notes" className="underline">Back to Dashboard</Link>
       </div>
     );
   }
 
-  const isExpired = new Date(note.expiryAt) < new Date();
   const shareUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/share/${note.shareToken}`;
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-3xl mx-auto">
-        <Link href="/notes" className="inline-flex items-center text-sm font-medium text-gray-500 hover:text-gray-900 mb-6 transition-colors">
-          <ArrowLeft size={16} className="mr-1" /> Back to Dashboard
-        </Link>
+    <div className="max-w-2xl mx-auto mt-10 p-5">
+      <Link href="/notes" className="underline mb-5 inline-block">
+        Back to Dashboard
+      </Link>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-          <div className="border-b border-gray-200 p-6 sm:p-8 bg-white">
-            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">{note.title}</h1>
-                <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-gray-500">
-                  <span className="flex items-center">
-                    <Clock size={16} className="mr-1 text-gray-400" />
-                    Expires: {format(new Date(note.expiryAt), "PPp")}
-                  </span>
-                  <span className="flex items-center">
-                    <Eye size={16} className="mr-1 text-gray-400" />
-                    Views: {note.viewCount}
-                  </span>
-                </div>
-              </div>
-              <div className="flex flex-col items-end gap-2">
-                {note.isRevoked ? (
-                  <span className="inline-flex items-center rounded-full bg-red-50 px-3 py-1 text-sm font-medium text-red-700 ring-1 ring-inset ring-red-600/20">
-                    <Ban size={14} className="mr-1.5" /> Revoked
-                  </span>
-                ) : isExpired ? (
-                  <span className="inline-flex items-center rounded-full bg-yellow-50 px-3 py-1 text-sm font-medium text-yellow-800 ring-1 ring-inset ring-yellow-600/20">
-                    <Clock size={14} className="mr-1.5" /> Expired
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center rounded-full bg-green-50 px-3 py-1 text-sm font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
-                    <CheckCircle2 size={14} className="mr-1.5" /> Active
-                  </span>
-                )}
-              </div>
-            </div>
-          </div>
+      <div className="border p-5">
+        <h1 className="text-2xl font-bold mb-2">{note.title}</h1>
+        
+        <div className="mb-4 text-sm text-gray-600">
+          <p>Status: {note.isRevoked ? "Revoked" : new Date(note.expiryAt) < new Date() ? "Expired" : "Active"}</p>
+          <p>Expires: {format(new Date(note.expiryAt), "MMM d, yyyy h:mm a")}</p>
+          <p>Views: {note.viewCount}</p>
+        </div>
 
-          <div className="p-6 sm:p-8">
-            <h3 className="text-sm font-medium text-gray-900 mb-4 flex items-center">
-              <FileText size={18} className="mr-2 text-indigo-500" /> Content
-            </h3>
-            <div className="bg-gray-50 p-4 rounded-lg border border-gray-100 min-h-[150px] whitespace-pre-wrap text-gray-800">
-              {note.content}
-            </div>
+        <div className="mb-4">
+          <h2 className="font-bold">Content:</h2>
+          <div className="border p-3 whitespace-pre-wrap">{note.content}</div>
+        </div>
 
-            <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-white border border-gray-200 rounded-lg p-5">
-                <h4 className="text-sm font-medium text-gray-900 mb-3 flex items-center">
-                  <LinkIcon size={16} className="mr-2 text-indigo-500" /> Share Link
-                </h4>
-                <div className="flex mt-1 relative rounded-md shadow-sm">
-                  <input
-                    type="text"
-                    readOnly
-                    value={shareUrl}
-                    className="block w-full rounded-none rounded-l-md border-0 py-2 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 sm:text-sm sm:leading-6 bg-gray-50"
-                  />
-                  <button
-                    onClick={copyToClipboard}
-                    className="relative -ml-px inline-flex items-center gap-x-1.5 rounded-r-md px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 transition-colors"
-                  >
-                    {copied ? <CheckCircle2 size={16} className="text-green-500" /> : <Copy size={16} className="text-gray-400" />}
-                    {copied ? "Copied" : "Copy"}
-                  </button>
-                </div>
-              </div>
-
-              <div className="bg-white border border-gray-200 rounded-lg p-5">
-                <h4 className="text-sm font-medium text-gray-900 mb-3 flex items-center">
-                  <Shield size={16} className="mr-2 text-indigo-500" /> Security Info
-                </h4>
-                <div className="space-y-3 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-gray-500">Access Type:</span>
-                    <span className="font-medium text-gray-900">{note.accessType}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-500">Share Type:</span>
-                    <span className="font-medium text-gray-900">{note.shareType}</span>
-                  </div>
-                  {note.accessType === "PASSWORD" && note.accessKey && (
-                    <div className="flex justify-between border-t border-gray-100 pt-3 mt-3">
-                      <span className="text-gray-500">Password:</span>
-                      <span className="font-mono bg-gray-100 px-2 py-0.5 rounded text-gray-900 select-all">
-                        {note.accessKey}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {!note.isRevoked && (
-              <div className="mt-8 pt-6 border-t border-gray-200 flex justify-end">
-                <button
-                  onClick={handleRevoke}
-                  disabled={revoking}
-                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  <Ban size={16} className="mr-2" />
-                  {revoking ? "Revoking..." : "Revoke Access"}
-                </button>
-              </div>
-            )}
+        <div className="mb-4">
+          <h2 className="font-bold">Share Link:</h2>
+          <div className="flex gap-2">
+            <input type="text" readOnly value={shareUrl} className="border p-2 w-full" />
+            <button onClick={copyToClipboard} className="border px-4 py-2">
+              {copied ? "Copied" : "Copy"}
+            </button>
           </div>
         </div>
+
+        <div className="mb-4">
+          <h2 className="font-bold">Settings:</h2>
+          <p>Access Type: {note.accessType}</p>
+          <p>Share Type: {note.shareType}</p>
+          {note.accessType === "PASSWORD" && note.accessKey && (
+            <p>Password: {note.accessKey}</p>
+          )}
+        </div>
+
+        {!note.isRevoked && (
+          <button 
+            onClick={handleRevoke} 
+            disabled={revoking}
+            className="border px-4 py-2 bg-red-100 text-red-700 w-full mt-4"
+          >
+            {revoking ? "Revoking..." : "Revoke Note"}
+          </button>
+        )}
       </div>
     </div>
   );
