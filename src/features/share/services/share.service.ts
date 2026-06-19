@@ -32,24 +32,33 @@ export async function getSharedNote(
     );
   }
 
-  if (note.accessType === "PUBLIC") {
-    await prisma.note.update({
-      where: {
-        id: note.id,
-      },
-      data: {
-        viewCount: {
-          increment: 1,
-        },
-      },
-    });
+  if (note.accessType === "PASSWORD") {
+    return {
+      id: note.id,
+      title: note.title,
+      shareType: note.shareType,
+      accessType: note.accessType,
+      isRevoked: note.isRevoked,
+      viewCount: note.viewCount,
+      expiryAt: note.expiryAt,
+      content: "", // Hide content until unlocked
+    };
   }
 
- if (note.shareType === "ONE_TIME") {
-  await markOneTimeLinkAsUsed(
-    note.id
-  );
-}
+  if (note.shareType === "ONE_TIME") {
+    await markOneTimeLinkAsUsed(note.id);
+  }
+
+  await prisma.note.update({
+    where: {
+      id: note.id,
+    },
+    data: {
+      viewCount: {
+        increment: 1,
+      },
+    },
+  });
 
   const {
     accessKey,
