@@ -1,3 +1,4 @@
+import { decrypt } from "@/lib/encryption";
 import { prisma } from "@/lib/prisma";
 
 export async function getSharedNote(
@@ -99,15 +100,20 @@ export async function unlockNote(
     );
   }
 
-  if (
-    note.accessType === "PASSWORD"
-  ) {
-    if (
-      note.accessKey !== accessKey
-    ) {
-      throw new Error(
-        "Invalid access key"
-      );
+  if (note.accessType === "PASSWORD") {
+    if (!note.accessKey) {
+      throw new Error("Invalid access key");
+    }
+    let isPasswordValid = false;
+    try {
+      const decryptedPassword = decrypt(note.accessKey);
+      isPasswordValid = (decryptedPassword === accessKey);
+    } catch (e) {
+      isPasswordValid = false; // Fails decryption (e.g. old bcrypt hash)
+    }
+    
+    if (!isPasswordValid) {
+      throw new Error("Invalid access key");
     }
   }
 

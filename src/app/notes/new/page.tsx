@@ -11,6 +11,7 @@ export default function NewNotePage() {
   const [content, setContent] = useState("");
   const [shareType, setShareType] = useState("TIME_BASED");
   const [accessType, setAccessType] = useState("PUBLIC");
+  const [accessKey, setAccessKey] = useState("");
   const [expiryAt, setExpiryAt] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -27,7 +28,7 @@ export default function NewNotePage() {
     setLoading(true);
     setError("");
     
-    if (!title || !content || !expiryAt) {
+    if (!title || !content || !expiryAt || (accessType === "PASSWORD" && !accessKey)) {
       setError("Please fill in all required fields.");
       setLoading(false);
       return;
@@ -49,7 +50,7 @@ export default function NewNotePage() {
           content,
           shareType,
           accessType,
-          accessKey: undefined,
+          accessKey: accessType === "PASSWORD" ? accessKey : undefined,
           expiryAt: new Date(expiryAt).toISOString(),
         }),
       });
@@ -138,7 +139,19 @@ export default function NewNotePage() {
               </div>
             </div>
 
-
+            {accessType === "PASSWORD" && (
+              <div>
+                <label className="block text-sm font-bold uppercase mb-2">Password</label>
+                <input
+                  type="text"
+                  required
+                  value={accessKey}
+                  onChange={(e) => setAccessKey(e.target.value)}
+                  className="w-full border-2 border-black p-3 focus:outline-none focus:ring-0 transition-all focus:-translate-y-1 focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+                  placeholder="Enter a secure password"
+                />
+              </div>
+            )}
 
             <div>
               <label className="block text-sm font-bold uppercase mb-2">Expiry Date & Time</label>

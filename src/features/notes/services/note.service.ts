@@ -1,3 +1,4 @@
+import { encrypt, decrypt } from "@/lib/encryption";
 import { prisma } from "@/lib/prisma";
 
 
@@ -12,10 +13,13 @@ export async function createNote(
   const shareToken =
     generateShareToken();
 
-const accessKey =
-  data.accessType === "PASSWORD"
-    ? Math.random().toString(36).slice(-8)
-    : null;
+  let accessKey = null;
+  let hashedAccessKey = null;
+
+  if (data.accessType === "PASSWORD") {
+    accessKey = data.accessKey || Math.random().toString(36).slice(-8);
+    hashedAccessKey = encrypt(accessKey);
+  }
   const note = await prisma.note.create({
     data: {
       title: data.title,
@@ -25,7 +29,7 @@ const accessKey =
       accessType: data.accessType,
 
       shareToken,
-      accessKey,
+      accessKey: hashedAccessKey,
 
       expiryAt: new Date(
         data.expiryAt
@@ -94,7 +98,17 @@ export async function getNoteById(
     );
   }
 
-  return note;
+  let finalNote = note as any;
+  if (finalNote.accessKey) {
+    try {
+      finalNote.accessKey = decrypt(finalNote.accessKey);
+    } catch (e) {
+      // In case we fail to decrypt an old bcrypt hash
+      finalNote.accessKey = null;
+    }
+  }
+
+  return finalNote;
 }
 
 export async function getUserNotes(
@@ -109,5 +123,8 @@ export async function getUserNotes(
     },
   });
 
-  return notes;
+  return notes.map(note => {
+    const { accessKey, ...safeNote } = note;
+    return safeNote;
+  });
 }
